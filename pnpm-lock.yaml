@@ -111,6 +111,9 @@ importers:
       '@elizaos/adapter-sqlite':
         specifier: workspace:*
         version: link:../packages/adapter-sqlite
+      '@elizaos/app-quiz':
+        specifier: workspace:*
+        version: link:../packages/app-quiz
       '@elizaos/client-auto':
         specifier: workspace:*
         version: link:../packages/client-auto

@@ -7,7 +7,7 @@ import {
     composeContext,
     generateObject,
     ModelClass,
-    elizaLogger,
+    elizaLogger, stringToUuid, getEmbeddingZeroVector,
 } from "@elizaos/core";
 
 import { isCreateResourceContent } from "../types";
@@ -48,14 +48,16 @@ Example response:
 
 {{knowledge}}
 
-Given the knowledge, ask a question and provide the answer along with the reward amount and type.
+Based on the existing knowledge, ask an objective question and provide a reference answer along with the reward amount and type.
+
+Supported Rewards: 100 ~ 200 CKB or 1 ~ 5 USDI, according to the difficulty of the question.
 
 Respond with a JSON markdown block containing only the extracted values.`
 
 export const newQuestion: Action = {
     name: "NEW_QUESTION",
     similes: ["NEW_QUIZ", "GENERATE_QUESTION", "CREATE_QUESTION", "GENERATE_QUIZ", "CREATE_QUIZ"],
-    description: "Create a new question",
+    description: "Create a new question. The next action for NEW_QUESTION must be ANSWER_QUESTION.",
     validate: async (runtime: IAgentRuntime, _message: Memory) => {
         return true
     },
@@ -73,7 +75,15 @@ export const newQuestion: Action = {
                 runtime, context, modelClass: ModelClass.MEDIUM, schema,
             })).object as QuestionContent;
 
-            await runtime.messageManager.createMemory({
+            await callback(
+                {
+                    text: `Question: ${content.question}\nReward: ${content.reward.amount} ${content.reward.type}`,
+                },
+                []
+            );
+
+            runtime.messageManager.createMemory({
+                id: stringToUuid(Date.now()),
                 userId: state.agentId,
                 agentId: _message.agentId,
                 roomId: _message.roomId,
@@ -81,15 +91,10 @@ export const newQuestion: Action = {
                     text: `(Correct answer is: ${content.answer})`,
                     question: content
                 },
+                embedding: getEmbeddingZeroVector(),
                 createdAt: Date.now(),
             })
 
-            callback(
-                {
-                    text: `Question: ${content.question}\nReward: ${content.reward.amount} ${content.reward.type}`,
-                },
-                []
-            );
         } catch (error) {
             elizaLogger.error("Error generating question:", error);
             callback(

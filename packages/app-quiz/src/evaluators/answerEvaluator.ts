@@ -51,7 +51,7 @@ Reward: 100 CKB`
         elizaLogger.log("Evaluating data in sampleEvaluator...");
 
         // Example evaluation logic
-        if (memory.content && memory.content.includes("important")) {
+        if (memory.content && memory.content.action == "NEW_QUESTION") {
             elizaLogger.log("Important content found in memory.");
             return {
                 score: 1,

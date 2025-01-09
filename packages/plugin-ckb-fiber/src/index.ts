@@ -14,7 +14,7 @@ export const ckbFiberPlugin: Plugin = {
     name: "ckb-fiber",
     description: "Fiber network (Lighting network on CKB) integration plugin",
     actions: [getInfo, listChannels, sendPayment, getPayment],
-    providers: [nodeProvider, channelsProvider],
+    providers: [],
     evaluators: [],
     // separate examples will be added for services and clients
     services: [new CKBFiberService()],

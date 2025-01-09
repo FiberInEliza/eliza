@@ -78,9 +78,9 @@ export const getPayment: Action = {
 
             return callback({ text: formatPayment(payment) }, []);
         } catch (error) {
-            elizaLogger.error("Error sending payment:", error);
+            elizaLogger.error("Error get payment:", error);
             callback(
-                { text: `Fail to send payment, message: ${error.message}` },
+                { text: `Fail to get payment, message: ${error.message}` },
                 []
             );
         }

@@ -20,7 +20,7 @@ const schema = z.object({
     question: z.string(),
     answer: z.string(),
     correctAnswer: z.string(),
-    invoice: z.string(),
+    invoice: z.string().optional().nullable(),
     score: z.number(),
 });
 
@@ -28,7 +28,7 @@ type Content = {
     question: string;
     answer: string;
     correctAnswer: string;
-    invoice: string;
+    invoice?: string;
     score: number;
 }
 
@@ -71,13 +71,15 @@ Your score is 100. Congratulations, you have a great understanding of France!
 export const answerQuestion: Action = {
     name: "ANSWER_QUESTION",
     similes: ["ANSWER_QUIZ", "ANSWER"],
-    description: "Answer the last question",
+    description: "Answer the previous question. The next action for NEW_QUESTION must be ANSWER_QUESTION.",
     validate: async (runtime: IAgentRuntime, _message: Memory) => {
         const messages = await runtime.messageManager.getMemoriesByRoomIds({
             roomIds: [_message.roomId],
         })
         // Get the last message
-        messages.sort((a, b) => a.createdAt - b.createdAt);
+        messages.sort((a, b) => b.createdAt - a.createdAt);
+
+        console.log("messages:", messages)
 
         const lastQuestionMessageIdx = messages.findIndex(
             (message) => message.content.action === "NEW_QUESTION"
@@ -88,9 +90,7 @@ export const answerQuestion: Action = {
 
         // If there is no question or the last answer is after the last question, return false
         if (lastQuestionMessageIdx === -1) return false
-        if (lastAnswerMessageIdx !== -1 && lastAnswerMessageIdx > lastQuestionMessageIdx) return false
-
-        if (!messages[lastQuestionMessageIdx].content.question) return false
+        if (lastAnswerMessageIdx !== -1 && lastAnswerMessageIdx < lastQuestionMessageIdx) return false
 
         return true
     },
@@ -105,7 +105,7 @@ export const answerQuestion: Action = {
             const context = composeContext({ state, template });
 
             const content = (await generateObject({
-                runtime, context, modelClass: ModelClass.MEDIUM, schema,
+                runtime, context, modelClass: ModelClass.SMALL, schema,
             })).object as Content;
 
             const responseState = runtime.composeState(_message, content);
@@ -116,13 +116,19 @@ export const answerQuestion: Action = {
                 runtime, context: responseContext, modelClass: ModelClass.SMALL,
             })
 
+            console.log("Answer content:", content)
+
             // If the score is greater than or equal to 80, send the payment
             if (content.score >= 80) {
-                const responses = await callback(
-                    { text, action: content.score >= 80 ? "SEND_PAYMENT" : undefined },
-                    []
-                );
-                runtime.processActions(_message, responses, state, callback);
+                if (!content.invoice)
+                    callback( { text: `${text}\nPlease provide an invoice to receive the reward.` }, [] );
+                else {
+                    const responses = await callback(
+                        { text, action: content.score >= 80 ? "SEND_PAYMENT" : undefined },
+                        []
+                    );
+                    runtime.processActions(_message, responses, state, callback);
+                }
             } else
                 callback( { text }, [] );
         } catch (error) {

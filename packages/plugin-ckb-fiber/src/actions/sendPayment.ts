@@ -51,9 +51,11 @@ export const sendPayment: Action = {
     similes: ["SEND_FUND", "SEND_TOKEN", "SEND_CKB", "SEND_UDT", "PAY_INVOICE"],
     description: "Send payment for a invoice",
     validate: async (runtime: IAgentRuntime, _message: Memory) => {
-        if (!await runtime.getService<CKBFiberService>(ServiceTypeCKBFiber)?.checkNode())
-            return false
-        return true;
+        return false
+
+        // if (!await runtime.getService<CKBFiberService>(ServiceTypeCKBFiber)?.checkNode())
+        //     return false
+        // return true;
     },
     handler: async (
         runtime: IAgentRuntime,

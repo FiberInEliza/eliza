@@ -388,6 +388,7 @@ export class MessageManager {
                             ?.discordMessageHandlerTemplate ||
                         discordMessageHandlerTemplate,
                 });
+                console.log("Context:", context);
 
                 // simulate discord typing while generating a response
                 const stopTyping = this.simulateTyping(message)

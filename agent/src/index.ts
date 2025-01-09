@@ -65,7 +65,7 @@ import { avalanchePlugin } from "@elizaos/plugin-avalanche";
 import { webSearchPlugin } from "@elizaos/plugin-web-search";
 import { echoChamberPlugin } from "@elizaos/plugin-echochambers";
 import { ckbFiberPlugin } from "@elizaos/plugin-ckb-fiber";
-import { appQuiz } from "@elizaos/plugin-app-quiz";
+import { appQuiz } from "@elizaos/app-quiz";
 import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
